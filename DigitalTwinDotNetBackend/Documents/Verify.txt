@@ -1,0 +1,19 @@
+﻿Phase 0
+curl http://localhost:5251/
+curl http://localhost:5251/health/live
+curl http://localhost:5251/health/ready
+curl http://localhost:5251/debug/proxy-ping
+
+curl -s http://localhost:5251/twin/printers | jq
+
+curl -s http://localhost:5251/twin/printers/01P00A3B2300627/meta | jq
+curl -s http://localhost:5251/twin/printers/01P00A3B2300627 | jq
+
+curl -X POST http://localhost:5251/debug/subscribe/01P00A3B2300627
+watch -n 1 curl -s http://localhost:5251/twin/printers/01P00A3B2300627 | jq
+curl -X POST http://localhost:5251/debug/unsubscribe/01P00A3B2300627
+
+curl -X POST http://localhost:5251/twin/printers/01P00A3B2300627/watch
+curl -N http://localhost:5251/twin/stream/printer/01P00A3B2300627
+curl -N "http://localhost:5000/twin/stream/printers?ids=01P00A3B2300627,01P00A3B2200598"
+curl -X POST http://localhost:5000/twin/printers/01P00A3B2300627/unwatch

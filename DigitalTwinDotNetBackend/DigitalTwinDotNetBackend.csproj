@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.1" />
+        <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="8.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.20" />
+        <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="8.4.0" />
+        <PackageReference Include="Polly.Extensions" Version="8.4.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="ApiHost\ApiHost.csproj" />
+      <Content Include="Common\Common.csproj" />
+      <Content Include="DigitalTwin\DigitalTwin.csproj" />
+      <Content Include="StateSync\StateSync.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\index.html" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.6" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.6" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.6">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+
+      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
+
+      <PackageReference Include="StackExchange.Redis" Version="2.7.33" />
+
+      <PackageReference Include="Polly" Version="8.4.0" />
+      <PackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
+    </ItemGroup>
+
+</Project>

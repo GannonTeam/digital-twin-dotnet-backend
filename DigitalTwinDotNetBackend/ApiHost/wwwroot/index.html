@@ -1,0 +1,209 @@
+﻿<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Core Twin – Printers Dashboard</title>
+    <style>
+        body { font-family: system-ui, Arial, sans-serif; background:#0f1115; color:#eee; margin:0; padding:20px; }
+        h1 { color:#ffa62b; margin:0 0 12px; }
+        .toolbar { display:flex; gap:12px; align-items:center; margin-bottom:12px; }
+        .pill { background:#1a1d24; padding:6px 10px; border-radius:999px; border:1px solid #2a2f3a; color:#99a; }
+        table { width:100%; border-collapse: collapse; }
+        th, td { border-bottom: 1px solid #222; padding:8px; text-align:left; }
+        th { background:#141821; position:sticky; top:0; }
+        tr:hover { background:#14161c; }
+        .btn { padding:4px 10px; border-radius:8px; border:1px solid #38404f; background:#1b2130; color:#ddd; cursor:pointer; }
+        .btn[disabled] { opacity:.5; cursor:not-allowed; }
+        .live { color:#0ad879; font-weight:600; }
+        .snap { color:#f39c12; }
+        .error { color:#ff5470; }
+        .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+        .small { font-size: .9rem; color:#9aa3b2; }
+    </style>
+</head>
+<body>
+<h1>Printers</h1>
+<div class="toolbar">
+    <span id="cap" class="pill">maxActive: …</span>
+    <span id="active" class="pill">live: 0</span>
+    <span id="status" class="small"></span>
+</div>
+
+<table id="grid">
+    <thead>
+    <tr>
+        <th>DevId</th>
+        <th>Name</th>
+        <th>Model</th>
+        <th>Status</th>
+        <th>Prog %</th>
+        <th>Nozzle</th>
+        <th>Bed</th>
+        <th>Live?</th>
+        <th>Action</th>
+        <th class="mono">Updated</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+    const tbody = document.querySelector('#grid tbody');
+    const statusEl = document.getElementById('status');
+    const capEl = document.getElementById('cap');
+    const activeEl = document.getElementById('active');
+
+    let maxActive = 10;
+    let overviewSec = 10;
+    let overviewTimer = null;
+    
+    const watched = new Set();
+    let sse = null;
+    let sseUrl = null;
+
+    async function loadConfig() {
+        const res = await fetch('/twin/config');
+        const cfg = await res.json();
+        maxActive = cfg.maxActiveSessions ?? 10;
+        overviewSec = cfg.pollOverviewSeconds ?? 10;
+        capEl.textContent = `maxActive: ${maxActive}`;
+    }
+
+    async function loadActive() {
+        const res = await fetch('/twin/realtime/active');
+        const data = await res.json();
+        activeEl.textContent = `live: ${data.activeSessions ?? 0}`;
+    }
+    
+    const rows = new Map();
+    function upsertRow(item) {
+        let tr = rows.get(item.devId);
+        if (!tr) {
+            tr = document.createElement('tr');
+            tr.innerHTML = `
+          <td class="mono dev"></td>
+          <td class="name"></td>
+          <td class="model"></td>
+          <td class="state"></td>
+          <td class="prog"></td>
+          <td class="noz"></td>
+          <td class="bed"></td>
+          <td class="live"></td>
+          <td class="actions"></td>
+          <td class="mono updated"></td>
+        `;
+            tbody.appendChild(tr);
+            rows.set(item.devId, tr);
+        }
+
+        tr.querySelector('.dev').textContent = item.devId;
+        tr.querySelector('.name').textContent = item.name ?? '';
+        tr.querySelector('.model').textContent = item.model ?? '';
+        
+        const liveCell = tr.querySelector('.live');
+        liveCell.textContent = watched.has(item.devId) ? 'LIVE (client)' : 'SNAP';
+        liveCell.className = 'live ' + (watched.has(item.devId) ? 'live' : 'snap');
+
+        const btnCell = tr.querySelector('.actions');
+        btnCell.innerHTML = '';
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.textContent = watched.has(item.devId) ? 'Unwatch' : 'Watch';
+        btn.onclick = () => toggleWatch(item.devId);
+        btnCell.appendChild(btn);
+    }
+
+    async function refreshOverview() {
+        try {
+            const res = await fetch('/twin/printers');
+            const list = await res.json();
+            list.forEach(upsertRow);
+            statusEl.textContent = `Overview refreshed @ ${new Date().toLocaleTimeString()}`;
+        } catch (e) {
+            statusEl.innerHTML = `<span class="error">Overview error: ${e}</span>`;
+        }
+    }
+
+    function restartOverviewTimer() {
+        if (overviewTimer) clearInterval(overviewTimer);
+        overviewTimer = setInterval(refreshOverview, overviewSec * 1000);
+    }
+
+    function reopenSse() {
+        if (sse) { sse.close(); sse = null; }
+        if (watched.size === 0) { sseUrl = null; return; }
+
+        const ids = Array.from(watched).join(',');
+        const url = `/twin/stream/printers?ids=${encodeURIComponent(ids)}`;
+        sseUrl = url;
+
+        const es = new EventSource(url);
+        es.onmessage = (evt) => {
+            try {
+                const diff = JSON.parse(evt.data);
+                applyDiff(diff);
+            } catch {}
+        };
+        es.onerror = () => {
+            statusEl.innerHTML = `<span class="error">SSE connection issue… retrying</span>`;
+        };
+        sse = es;
+    }
+
+    function applyDiff(diff) {
+        const devId = diff.devId;
+        const tr = rows.get(devId);
+        if (!tr) return;
+
+        const f = diff.fields || {};
+        const upd = new Date(diff.updatedAt).toLocaleTimeString();
+        tr.querySelector('.updated').textContent = upd;
+
+        if (f['reported.state'] !== undefined) tr.querySelector('.state').textContent = f['reported.state'];
+        if (f['reported.progress_pct'] !== undefined) tr.querySelector('.prog').textContent = (f['reported.progress_pct']).toFixed(1);
+        if (f['reported.nozzle_c'] !== undefined) tr.querySelector('.noz').textContent = f['reported.nozzle_c'].toFixed(1) + '°C';
+        if (f['reported.bed_c'] !== undefined) tr.querySelector('.bed').textContent = f['reported.bed_c'].toFixed(1) + '°C';
+        if (f['live'] !== undefined) {
+            const liveCell = tr.querySelector('.live');
+            liveCell.textContent = f['live'] ? 'LIVE' : 'SNAP';
+            liveCell.className = 'live ' + (f['live'] ? 'live' : 'snap');
+        }
+    }
+
+    async function toggleWatch(devId) {
+        const watching = watched.has(devId);
+
+        if (!watching) {
+            if (watched.size >= maxActive) {
+                alert(`Watch cap reached (${maxActive}). Unwatch a printer first.`);
+                return;
+            }
+            await fetch(`/twin/printers/${encodeURIComponent(devId)}/watch`, { method: 'POST' });
+            watched.add(devId);
+        } else {
+            await fetch(`/twin/printers/${encodeURIComponent(devId)}/unwatch`, { method: 'POST' });
+            watched.delete(devId);
+        }
+        
+        const tr = rows.get(devId);
+        if (tr) {
+            const btn = tr.querySelector('.actions .btn');
+            if (btn) btn.textContent = watched.has(devId) ? 'Unwatch' : 'Watch';
+            const liveCell = tr.querySelector('.live');
+            liveCell.textContent = watched.has(devId) ? 'LIVE (client)' : 'SNAP';
+            liveCell.className = 'live ' + (watched.has(devId) ? 'live' : 'snap');
+        }
+
+        reopenSse();
+        loadActive().catch(()=>{});
+    }
+
+    (async function init() {
+        await loadConfig();
+        await refreshOverview();
+        restartOverviewTimer();
+        await loadActive();
+    })();
+</script>
+</body>
+</html>

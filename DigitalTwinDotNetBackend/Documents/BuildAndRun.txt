@@ -1,0 +1,24 @@
+﻿# Phase 0
+## Create solution and add projects if not already done
+dotnet new sln -n CoreTwin
+dotnet new web -n ApiHost -o ./ApiHost
+dotnet new classlib -n Common -o ./Common
+dotnet sln CoreTwin.sln add .Common/Common.csproj ./ApiHost/ApiHost.csproj
+dotnet add ./ApiHost/ApiHost.csproj reference ./Common/Common.csproj
+
+## Add the package refs (if you created empty projects first)
+dotnet restore
+
+## Create EF Core migrations (dev database must be reachable)
+dotnet tool install --global dotnet-ef
+dotnet ef migrations add Initial --project ./Common/Common.csproj --startup-project ./ApiHost/ApiHost.csproj --context Common.Storage.TwinDbContext
+dotnet ef database update --project ./Common/Common.csproj --startup-project ./ApiHost/ApiHost.csproj --context Common.Storage.TwinDbContext
+
+
+
+# Phase 1
+dotnet restore
+dotnet build
+
+# Run
+dotnet run --project ./ApiHost/ApiHost.csproj
