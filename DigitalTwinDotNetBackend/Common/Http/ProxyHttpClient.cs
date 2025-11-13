@@ -123,7 +123,7 @@ public sealed class ProxyHttpClient
             LayerTotal: d.TotalLayerNum,
             WifiSignalDbm: d.WifiSignal,
             Ams: trays,
-            AgeSeconds: rt.AgeSeconds ?? double.PositiveInfinity,
+            AgeSeconds: rt.AgeSeconds ?? -1,
             ExpiresInSeconds: rt.ExpiresIn,
             MessageCount: rt.MessageCount
         );

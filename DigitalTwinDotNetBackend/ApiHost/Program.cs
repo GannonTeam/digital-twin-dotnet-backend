@@ -37,22 +37,47 @@ builder.Services.AddHostedService<RealtimeSupervisor>();
 builder.Services.AddSingleton<RateLimitGovernor>();
 builder.Services.AddSingleton<IShadowEventBus, InMemoryShadowEventBus>();
 
-var pg = builder.Configuration.GetSection(PostgresOptions.Section).Get<PostgresOptions>()!;
-builder.Services.AddDbContext<TwinDbContext>(opt => opt.UseNpgsql(pg.ConnectionString, o => o.CommandTimeout(pg.CommandTimeoutSeconds)));
+// var pg = builder.Configuration.GetSection(PostgresOptions.Section).Get<PostgresOptions>()!;
+// builder.Services.AddDbContext<TwinDbContext>(opt => opt.UseNpgsql(pg.ConnectionString, o => o.CommandTimeout(pg.CommandTimeoutSeconds)));
+
+builder.Services.AddDbContext<TwinDbContext>((serviceProvider, opt) =>
+    {
+        var config = serviceProvider.GetRequiredService<IConfiguration>();
+        var pgConn = config["ConnectionStrings:Postgres"]
+                ?? config["Postgres:ConnectionString"]
+                ?? "Host=postgres;Port=5432;Database=twin;Username=twin;Password=twinpass";
+        
+        var pgOptions = config.GetSection(PostgresOptions.Section).Get<PostgresOptions>();
+        var timeout = pgOptions?.CommandTimeoutSeconds ?? 30;
+        
+        opt.UseNpgsql(pgConn, o => o.CommandTimeout(timeout));
+    });
+
+// builder.Services.AddTransient<ProxyAuthHeaderHandler>();
+// builder.Services.AddHttpClient<ProxyHttpClient>()
+//     .AddHttpMessageHandler<ProxyAuthHeaderHandler>()
+//     .AddResilienceHandler("proxy-pipeline", (pipelineBuilder, context) =>
+//     {
+//         var opts = context.ServiceProvider
+//             .GetRequiredService<IConfiguration>()
+//             .GetSection(ProxyOptions.Section)
+//             .Get<ProxyOptions>()!;
+//         var logger = context.ServiceProvider.GetRequiredService<ILogger<ProxyHttpClient>>();
+//         pipelineBuilder.AddPipeline(HttpPolicies.CreateResiliencePolicy(opts.MaxRetries, logger));
+//     });
 
 builder.Services.AddTransient<ProxyAuthHeaderHandler>();
 builder.Services.AddHttpClient<ProxyHttpClient>()
     .AddHttpMessageHandler<ProxyAuthHeaderHandler>()
     .AddResilienceHandler("proxy-pipeline", (pipelineBuilder, context) =>
     {
-        var opts = context.ServiceProvider
-            .GetRequiredService<IConfiguration>()
-            .GetSection(ProxyOptions.Section)
-            .Get<ProxyOptions>()!;
+        var config = context.ServiceProvider.GetRequiredService<IConfiguration>();
+        var opts = config.GetSection(ProxyOptions.Section).Get<ProxyOptions>();
+        var maxRetries = opts?.MaxRetries ?? 3;
+        
         var logger = context.ServiceProvider.GetRequiredService<ILogger<ProxyHttpClient>>();
-        pipelineBuilder.AddPipeline(HttpPolicies.CreateResiliencePolicy(opts.MaxRetries, logger));
+        pipelineBuilder.AddPipeline(HttpPolicies.CreateResiliencePolicy(maxRetries, logger));
     });
-
 
 var config = builder.Configuration;
 
@@ -63,9 +88,9 @@ var pgConn = config["ConnectionStrings:Postgres"]
 var redisConn = config["Redis:ConnectionString"] ?? "redis:6379";
 
 builder.Services.AddHealthChecks()
-    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy("OK"))
-    .AddNpgSql(pg.ConnectionString, name: "postgres")
-    .AddRedis(sp => sp.GetRequiredService<RedisConnection>().GetMultiplexer(), name: "redis");
+    .AddCheck("self", () => HealthCheckResult.Healthy("OK"))
+    .AddNpgSql(pgConn, name: "postgres")
+    .AddRedis(redisConn, name: "redis");
     
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())

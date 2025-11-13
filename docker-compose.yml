@@ -35,9 +35,10 @@ services:
       ASPNETCORE_URLS: http://0.0.0.0:5251
       ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=twin;Username=twin;Password=twinpass;Include Error Detail=true
       Redis__ConnectionString: redis:6379
-      # Add your proxy configs if needed:
-      # Proxy__BaseUrl: https://<your-proxy>
-      # Proxy__ApiKey:  <key>
+      Proxy__BaseUrl: https://bambu.gumaker.space
+      Proxy__ApiKey: 38b26ddf-1ac3-4d89-af21-157aa66f7d94
+      Proxy__TimeoutSeconds: 10
+      Proxy__MaxRetries: 4
     expose:
       - "5251"
     networks: [twin_net]

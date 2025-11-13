@@ -13,18 +13,20 @@ public sealed class FleetCacheJob : BackgroundService
     private readonly ILogger<FleetCacheJob> _log;
     private readonly ProxyHttpClient _proxy;
     private readonly RedisJsonStore _redis;
-    private readonly TwinDbContext _db;
+    // private readonly TwinDbContext _db;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly TimeSpan _interval;
     private readonly RateLimitGovernor _rl;
     
     private const string FleetIndexKey = "fleet:index"; // Redis set of dev_ids
     
-    public FleetCacheJob(IOptions<StateSyncOptions> opts, ILogger<FleetCacheJob> log, ProxyHttpClient proxy, RedisJsonStore redis, TwinDbContext db, RateLimitGovernor rl)
+    public FleetCacheJob(IOptions<StateSyncOptions> opts, ILogger<FleetCacheJob> log, ProxyHttpClient proxy, RedisJsonStore redis, IServiceScopeFactory scopeFactory, RateLimitGovernor rl)
     {
         _log = log;
         _proxy = proxy;
         _redis = redis;
-        _db = db;
+        // _db = db;
+        _scopeFactory = scopeFactory;
         _interval = TimeSpan.FromSeconds(Math.Max(15, opts.Value.FleetRefreshSeconds));
         _rl = rl;
     }
@@ -98,12 +100,14 @@ public sealed class FleetCacheJob : BackgroundService
     
     private async Task UpsertPrinterAsync(PrinterMeta meta, CancellationToken ct)
     {
-        var existing = await _db.Printers.AsTracking()
+        using var scope = _scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TwinDbContext>();
+        var existing = await db.Printers.AsTracking()
             .FirstOrDefaultAsync(p => p.DevId == meta.DevId, ct);
 
         if (existing is null)
         {
-            _db.Printers.Add(new Common.Storage.PrinterEntity
+            db.Printers.Add(new Common.Storage.PrinterEntity
             {
                 DevId = meta.DevId,
                 Name = meta.Name,
@@ -121,7 +125,7 @@ public sealed class FleetCacheJob : BackgroundService
             existing.Online = meta.Online;
             existing.LastSeen = DateTimeOffset.UtcNow;
         }
-        await _db.SaveChangesAsync(ct);
+        await db.SaveChangesAsync(ct);
     }
 }
 
@@ -142,7 +146,7 @@ internal static class ShadowFactory
                 Ams: null
             ),
             UpdatedAt: DateTimeOffset.UtcNow,
-            AgeSeconds: double.PositiveInfinity,
+            AgeSeconds: -1,
             Source: "bambu-proxy",
             Live: false
         );
