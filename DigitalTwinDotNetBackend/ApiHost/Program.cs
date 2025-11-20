@@ -83,9 +83,9 @@ var config = builder.Configuration;
 
 var pgConn = config["ConnectionStrings:Postgres"]
           ?? config["Postgres:ConnectionString"]
-          ?? "Host=postgres;Port=5432;Database=twin;Username=twin;Password=twinpass";
+          ?? "Host=206.180.209.81;Port=5432;Database=twin;Username=twin;Password=twinpass";
 
-var redisConn = config["Redis:ConnectionString"] ?? "redis:6379";
+var redisConn = config["Redis:ConnectionString"] ?? "206.180.209.81:6379";
 
 builder.Services.AddHealthChecks()
     .AddCheck("self", () => HealthCheckResult.Healthy("OK"))

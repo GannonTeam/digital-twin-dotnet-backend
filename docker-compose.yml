@@ -1,44 +1,16 @@
 version: "3.9"
 
 services:
-  postgres:
-    image: postgres:16
-    container_name: twin_pg
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: twin
-      POSTGRES_PASSWORD: twinpass
-      POSTGRES_DB: twin
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    networks: [twin_net]
-
-  redis:
-    image: redis:7-alpine
-    container_name: twin_redis
-    restart: unless-stopped
-    command: ["redis-server", "--appendonly", "yes"]
-    volumes:
-      - redisdata:/data
-    networks: [twin_net]
-
   backend:
     build:
       context: ./DigitalTwinDotNetBackend
       dockerfile: ./Dockerfile
     container_name: twin_backend
     restart: unless-stopped
-    depends_on:
-      - postgres
-      - redis
     environment:
       ASPNETCORE_URLS: http://0.0.0.0:5251
-      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=twin;Username=twin;Password=twinpass;Include Error Detail=true
-      Redis__ConnectionString: redis:6379
-      Proxy__BaseUrl: https://bambu.gumaker.space
-      Proxy__ApiKey: 38b26ddf-1ac3-4d89-af21-157aa66f7d94
-      Proxy__TimeoutSeconds: 10
-      Proxy__MaxRetries: 4
+      Postgres__ConnectionString: "Host=206.180.209.81;Port=5432;Username=twin;Password=twinpass;Database=twin;"
+      Redis__ConnectionString: "206.180.209.81:6379,abortConnect=false"
     expose:
       - "5251"
     networks: [twin_net]
@@ -63,7 +35,3 @@ services:
 
 networks:
   twin_net:
-
-volumes:
-  pgdata:
-  redisdata:
