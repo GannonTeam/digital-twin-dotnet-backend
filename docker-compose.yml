@@ -11,6 +11,11 @@ services:
       ASPNETCORE_URLS: http://0.0.0.0:5251
       Postgres__ConnectionString: "Host=206.180.209.81;Port=5432;Username=twin;Password=twinpass;Database=twin;"
       Redis__ConnectionString: "206.180.209.81:6379,abortConnect=false"
+
+      Proxy__BaseUrl: "https://bambu.gumaker.space"
+      Proxy__ApiKey: "38b26ddf-1ac3-4d89-af21-157aa66f7d94"
+      Proxy__TimeoutSeconds: "10"
+      Proxy__MaxRetries: "4"
     expose:
       - "5251"
     networks: [twin_net]
