@@ -20,7 +20,7 @@ services:
       - "5251"
     networks: [twin_net]
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:5251/twin/config"]
+      test: ["CMD", "curl", "-f", "http://localhost:5251/health/live"]
       interval: 15s
       timeout: 5s
       retries: 20

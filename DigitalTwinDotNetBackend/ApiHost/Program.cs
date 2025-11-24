@@ -17,6 +17,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.UseUrls("http://0.0.0.0:5251");
+
 builder.Services.Configure<ProxyOptions>(builder.Configuration.GetSection(ProxyOptions.Section));
 builder.Services.Configure<RedisOptions>(builder.Configuration.GetSection(RedisOptions.Section));
 builder.Services.Configure<PostgresOptions>(builder.Configuration.GetSection(PostgresOptions.Section));
