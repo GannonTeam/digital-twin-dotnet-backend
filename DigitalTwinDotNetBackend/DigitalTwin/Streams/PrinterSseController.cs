@@ -2,6 +2,7 @@
 using System.Text.Json;
 using Common.Contracts;
 using DigitalTwin.Streams;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DigitalTwin.Streams;
