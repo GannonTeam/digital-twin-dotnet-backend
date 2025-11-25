@@ -1,4 +1,4 @@
-﻿using Common.Contracts;
+﻿using Contracts;
 using Common.Storage;
 
 namespace DigitalTwin.Services;

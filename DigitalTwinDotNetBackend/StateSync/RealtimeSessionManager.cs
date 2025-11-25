@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using Common.Contracts;
+using Contracts;
 using Common.Storage;
 using Common.Http;
 using Microsoft.Extensions.Logging;

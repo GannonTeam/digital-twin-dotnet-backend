@@ -33,7 +33,7 @@
   <ItemGroup>
     <ProjectReference Include="ApiHost/ApiHost.csproj" />
     <ProjectReference Include="Common/Common.csproj" />
-    <ProjectReference Include="Common/Contracts/Common.Contracts.csproj" />
+    <ProjectReference Include="Contracts/Contracts.csproj" />
     <ProjectReference Include="DigitalTwin/DigitalTwin.csproj" />
     <ProjectReference Include="StateSync/StateSync.csproj" />
   </ItemGroup>

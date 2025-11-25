@@ -2,7 +2,7 @@
 using DigitalTwin.Streams;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Common.Contracts;
+using Contracts;
 
 namespace DigitalTwin.Streams;
 

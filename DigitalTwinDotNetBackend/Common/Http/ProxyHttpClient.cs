@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.Json;
 using Common.Config;
-using Common.Contracts;
+using Contracts;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 // using StateSync;

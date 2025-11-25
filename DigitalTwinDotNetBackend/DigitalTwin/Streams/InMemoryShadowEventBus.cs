@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Threading.Channels;
-using Common.Contracts;
+using Contracts;
 using Microsoft.Extensions.Logging;
 
 namespace DigitalTwin.Streams;

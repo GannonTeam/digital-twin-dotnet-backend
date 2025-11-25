@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Common.Contracts;
+namespace Contracts;
 
 public sealed class BindResponse
 {

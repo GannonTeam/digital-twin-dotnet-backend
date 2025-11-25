@@ -1,4 +1,4 @@
-﻿namespace Common.Contracts;
+﻿namespace Contracts;
 
 public sealed record PrinterMeta(
     string DevId,
