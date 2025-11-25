@@ -13,6 +13,7 @@ using DigitalTwin.Controllers;
 using DigitalTwin.Services;
 using StateSync;
 using DigitalTwin.Streams;
+using Contracts;
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
