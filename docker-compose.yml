@@ -3,8 +3,8 @@ version: "3.9"
 services:
   backend:
     build:
-      context: ./DigitalTwinDotNetBackend
-      dockerfile: ./Dockerfile
+      context: .
+      dockerfile: ./DigitalTwinDotNetBackend/Dockerfile
     container_name: twin_backend
     restart: unless-stopped
     environment:

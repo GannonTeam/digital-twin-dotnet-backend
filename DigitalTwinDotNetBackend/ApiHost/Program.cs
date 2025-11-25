@@ -110,9 +110,10 @@ using (var scope = app.Services.CreateScope())
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
+app.MapFallbackToFile("index.html");
 app.MapControllers();
 
-app.MapGet("/", () => Results.Text("Core Twin API Host (Phase 1) — OK\n"));
+app.MapGet("/api", () => Results.Text("Core Twin API Host (Phase 1) — OK\n"));
 app.MapGet("/debug/proxy-ping", async (ProxyHttpClient proxy) =>
 {
     var ok = await proxy.PingAsync();
