@@ -15,6 +15,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Common\Common.csproj" />
+        <ProjectReference Include="..\Common.Contracts\Common.Contracts.csproj" />
         <ProjectReference Include="..\StateSync\StateSync.csproj" />
         <ProjectReference Include="..\DigitalTwin\DigitalTwin.csproj" />
     </ItemGroup>

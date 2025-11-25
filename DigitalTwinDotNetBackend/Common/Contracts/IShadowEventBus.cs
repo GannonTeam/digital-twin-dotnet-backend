@@ -1,7 +1,6 @@
 ﻿using System.Threading.Channels;
-using Common.Contracts;
 
-namespace DigitalTwin.Streams;
+namespace Common.Contracts;
 
 public interface IShadowEventBus
 {
