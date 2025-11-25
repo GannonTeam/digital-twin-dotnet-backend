@@ -14,6 +14,11 @@
     </ItemGroup>
 
     <ItemGroup>
+	<PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.0" />
+	<PackageReference Include="AspNetCore.HealthChecks.Redis" Version="8.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\Common\Common.csproj" />
         <ProjectReference Include="..\Contracts\Contracts.csproj" />
         <ProjectReference Include="..\StateSync\StateSync.csproj" />
