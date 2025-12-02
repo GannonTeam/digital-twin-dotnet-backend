@@ -2,7 +2,7 @@
 curl http://localhost:5251/
 curl http://localhost:5251/health/live
 curl http://localhost:5251/health/ready
-curl http://localhost:5251/debug/proxy-ping
+curl https://digitaltwinbackend.quangphuly.online/debug/proxy-ping
 
 curl -s http://localhost:5251/twin/printers | jq
 

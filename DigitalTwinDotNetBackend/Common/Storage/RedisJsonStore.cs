@@ -24,7 +24,7 @@ public sealed class RedisJsonStore
     {
         var val = await _conn.Db.StringGetAsync(key);
         if (val.IsNullOrEmpty) return default;
-        return JsonSerializer.Deserialize<T>(val!, JsonOpts);
+        return JsonSerializer.Deserialize<T>(val.ToString() ?? string.Empty, JsonOpts);
     }
 
     public async Task<bool> KeyExistsAsync(string key) => await _conn.Db.KeyExistsAsync(key);
