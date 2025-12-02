@@ -5,8 +5,8 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Copy solution and all projects
-COPY DigitalTwinDotNetBackend.sln .
-COPY DigitalTwinDotNetBackend/ ./DigitalTwinDotNetBackend/
+COPY ../DigitalTwinDotNetBackend.sln ./
+COPY ../DigitalTwinDotNetBackend/ ./DigitalTwinDotNetBackend/
 
 # Restore dependencies
 RUN dotnet restore DigitalTwinDotNetBackend.sln
