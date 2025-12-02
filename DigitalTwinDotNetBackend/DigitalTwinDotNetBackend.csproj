@@ -6,7 +6,9 @@
     <IsPackable>false</IsPackable>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
-    <NoBuild>true</NoBuild>
+    <NoBuild>false</NoBuild>
+    <TargetFramework>net8.0</TargetFramework>
+    <DefaultItemExcludes>$(DefaultItemExcludes);Common/**;ApiHost/**;Contracts/**;DigitalTwin/**;Documents/**;Migrations/**;Models/**;Properties/**;StateSync/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <!-- Web + EF Core + Npgsql + Redis + Polly + Swagger -->
